@@ -98,6 +98,7 @@
 
 <body>
 <div id="err"></div>
+<noscript><div style="position:fixed;left:0;right:0;top:0;z-index:99;padding:10px;background:#a82d34;color:#fff;font:12px monospace">JavaScript вимкнено в цьому браузері — гра не запуститься.</div></noscript>
 <script>
 window.__showErr = function (m) {
   var e = document.getElementById('err');
@@ -106,6 +107,10 @@ window.__showErr = function (m) {
   e.textContent += String(m).slice(0, 400) + '\n';
 };
 window.addEventListener('error', function (ev) { window.__showErr('JS: ' + ev.message + (ev.lineno ? ' (рядок ' + ev.lineno + ')' : '')); });
+document.addEventListener('DOMContentLoaded', function () {
+  var h = document.getElementById('hint'); if (h) h.textContent += ' · v3';
+});
+setTimeout(function () { if (!window.__started) window.__showErr('Гра не запустилась: скрипт не дійшов до кінця (версія v3)'); }, 2500);
 window.addEventListener('unhandledrejection', function (ev) { window.__showErr('Promise: ' + (ev.reason && ev.reason.message || ev.reason)); });
 </script>
 <div id="app">
@@ -145,6 +150,7 @@ window.addEventListener('unhandledrejection', function (ev) { window.__showErr('
 <script>
 (() => {
 'use strict';
+try { if (!document.createElement('canvas').getContext('2d')) window.__showErr('Цей браузер не дає створити canvas 2D'); } catch (e) { window.__showErr('canvas: ' + e); }
 
 /* ==========================================================================
    1. НАЛАШТУВАННЯ ГРИ — міняй цифри тут
@@ -458,19 +464,4 @@ const costAuto  = () => Math.ceil(CFG.AUTO_BASE_COST  * Math.pow(CFG.AUTO_GROWTH
 
 /* ==========================================================================
    7. ЕКРАН, КАМЕРА, СЦЕНА
-   ========================================================================== */
-const stage = $('stage'), cv = $('game'), ctx = cv.getContext('2d');
-const floatersEl = $('floaters');
-const STEP = 16;
-let W = 0, H = 0, S = 3, cx = 0, cy = 0;    // логічний розмір, масштаб, позиція героя (ноги)
-let stars = [], clouds = [];
-
-function resize() {
-  const w = stage.clientWidth, h = stage.clientHeight;
-  if (!w || !h) return;
-  S = Math.max(2, Math.min(Math.ceil(w / 150), Math.floor(h / 110)));
-  W = Math.ceil(w / S); H = Math.ceil(h / S);
-  cv.width = W; cv.height = H;
-  cv.style.width = W * S + 'px'; cv.style.height = H * S + 'px';
-  ctx.imageSmoothingEnabled = false;
-  cx = Math.round(W *
+   ==================================
